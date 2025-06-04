@@ -1,0 +1,63 @@
+version: '3.8' # Especifica la versión de Docker Compose
+
+services:
+  # Servicio MariaDB
+  mariadb:
+    image: bitnami/mariadb:latest
+    #container_name: mariadb # Nombre explícito del contenedor (opcional)
+    environment:
+      # Variables de entorno leídas desde el archivo .env
+      ALLOW_EMPTY_PASSWORD: ${MARIADB_ALLOW_EMPTY_PASSWORD}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      # MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD} # Descomentar y añadir al .env si se usa
+      # MARIADB_PASSWORD: ${MARIADB_PASSWORD}           # Descomentar y añadir al .env si se usa
+    volumes:
+      # Mapea el volumen nombrado 'mariadb_data' al directorio de datos de MariaDB
+      - ${MARIADB_VOLUME_NAME}:/bitnami/mariadb
+    networks:
+      # Conecta el servicio a la red 'laravel-network'
+      - laravel-network-dev
+    restart: unless-stopped # Reinicia el contenedor si se detiene inesperadamente
+
+  # Servicio Laravel
+  laravel:
+    image: bitnami/laravel:latest
+    #container_name: laravel # Nombre explícito del contenedor (opcional)
+    ports:
+      # Mapea el puerto del host (definido en .env) al puerto 8000 del contenedor
+      - "${LARAVEL_HOST_PORT}:8000"
+      - 5173:5173
+    environment:
+      # Variables de entorno para la conexión a la base de datos, leídas desde .env
+      DB_HOST: ${DB_HOST} # Usa el nombre del servicio 'mariadb'
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_DATABASE: ${DB_DATABASE}
+      # DB_PASSWORD: ${DB_PASSWORD} # Asegúrate de que coincida con la configuración de MariaDB
+      # Otras variables de entorno necesarias para Laravel pueden ir aquí
+      # APP_KEY: base64:... # Es importante generar y configurar la APP_KEY de Laravel
+    volumes:
+      # Mapea el directorio del proyecto local (definido en .env) al directorio /app del contenedor
+      - ${LARAVEL_APP_PATH}:/app
+    networks:
+      # Conecta el servicio a la red 'laravel-network'
+      - laravel-network-dev
+    depends_on:
+      # Asegura que el servicio 'mariadb' se inicie antes que el servicio 'laravel'
+      - mariadb
+    restart: unless-stopped # Reinicia el contenedor si se detiene inesperadamente
+
+# Definición de Redes
+networks:
+  laravel-network-dev:
+    driver: bridge # Tipo de red (bridge es el predeterminado)
+      #name: laravel-network-dev # Nombre explícito de la red
+
+# Definición de Volúmenes
+volumes:
+  # Define el volumen nombrado para persistir los datos de MariaDB
+  mariadb_data:
+    name: ${MARIADB_VOLUME_NAME} # Usa el nombre definido en .env
+    driver: local # Driver de volumen (local es el predeterminado)
+
