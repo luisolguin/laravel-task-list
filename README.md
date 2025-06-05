@@ -29,8 +29,8 @@ Follow these steps to get your Laravel development environment up and running:
 If this `docker-compose.yml` file is part of a larger project, clone your project repository:
 
 ```bash
-git clone <your-repository-url>
-cd <your-project-directory>
+git clone https://github.com/luisolguin/laravel-docker-bitnami.git
+cd laravel-docker-bitnami
 ```
 
 #### 2. Create the `.env` file
