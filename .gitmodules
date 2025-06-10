@@ -1,0 +1,3 @@
+[submodule "my-project"]
+	path = my-project
+	url = git@github.com:luisolguin/laravel-task-code.git
